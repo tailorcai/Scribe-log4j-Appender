@@ -40,7 +40,8 @@
   </dependencies>
   
   <build>
-        <plugins>
+    <sourceDirectory>src/java</sourceDirectory>      
+    <plugins>
   		<plugin>
     			<groupId>org.apache.maven.plugins</groupId>
     			<artifactId>maven-compiler-plugin</artifactId>
