@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.log4j.scribe</groupId>
-  <artifactId>scribelog4j</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <artifactId>scribe-log4j-finagle-2.9.2</artifactId>
+  <version>6.11.1</version>
   <packaging>jar</packaging>
 
   <name>scribelog4j</name>
@@ -13,6 +13,38 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  <repositories>
+    <repository>
+      <id>github-releases</id>
+      <url>http://oss.sonatype.org/content/repositories/github-releases/</url>
+    </repository>
+    <repository>
+      <id>clojars.org</id>
+			<url>http://clojars.org/repo</url>
+		</repository>
+		<repository>
+			<id>spy</id>
+			<name>Spy Repository</name>
+			<layout>default</layout>
+			<url>http://files.couchbase.com/maven2/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	<repository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+        </repository>
+        <repository>
+            <id>twitter</id>
+            <url>http://maven.twttr.com/</url>
+        </repository>
+        <repository>
+            <id>mvnrepository</id>
+            <url>http://mvnrepository.com/</url>
+        </repository>
+	</repositories>
 
   <dependencies>
     <dependency>
@@ -21,11 +53,11 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-	<dependency>
+    <dependency>
     	<groupId>org.apache.thrift</groupId>
     	<artifactId>libthrift</artifactId>
-    	<version>0.8.0</version>
-	</dependency>
+    	<version>0.5.0</version>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -36,6 +68,21 @@
       <artifactId>slf4j-log4j12</artifactId>
       <version>1.6.4</version>
     </dependency>
+       <dependency>
+	  <groupId>com.twitter</groupId>
+	  <artifactId>scrooge-core_2.9.2</artifactId>
+	  <version>3.13.0</version>
+	</dependency>
+	<dependency>
+        	<groupId>com.twitter</groupId>
+        	<artifactId>finagle-core_2.9.2</artifactId>
+        	<version>6.11.1</version>
+        </dependency>
+	<dependency>
+        	<groupId>com.twitter</groupId>
+        	<artifactId>finagle-thrift_2.9.2</artifactId>
+        	<version>6.11.1</version>
+        </dependency>
 	
   </dependencies>
   
@@ -51,63 +98,42 @@
         			<target>1.5</target>
     			</configuration>
   		</plugin>
+			<plugin>
+			  <groupId>com.twitter</groupId>
+			  <artifactId>scrooge-maven-plugin</artifactId>
+			  <version>3.13.0</version>
+			  <configuration>
+			    <thriftNamespaceMappings>
+			      <thriftNamespaceMapping>
+			      </thriftNamespaceMapping>
+			    </thriftNamespaceMappings>
+			    <language>java</language> <!-- default is scala -->
+			    <thriftOpts>
+			      <!-- add other Scrooge command line options using thriftOpts -->
+			    </thriftOpts>
+			    <!-- tell scrooge to extract thrifts from these artifacts -->
+			    <dependencyIncludes>
+			      <include>event-logger-thrift</include>
+			    </dependencyIncludes>
+			  </configuration>
+			  <executions>
+			    <execution>
+			      <id>thrift-sources</id>
+			      <phase>generate-sources</phase>
+			      <goals>
+			        <goal>compile</goal>
+			      </goals>
+			    </execution>
+			    <execution>
+			      <id>thrift-test-sources</id>
+			      <phase>generate-test-sources</phase>
+			      <goals>
+			        <goal>testCompile</goal>
+			      </goals>
+			    </execution>
+			  </executions>
+			</plugin>
         </plugins>
   </build>
-  
-  <profiles>
-    <profile>
-      <id>profile-buildthrift</id>
-      <activation>
-        <file>
-          <exists>/usr/local/bin/thrift</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>generate-sources</id>
-                <phase>generate-sources</phase>
-                <configuration>
-                  <tasks>
-                    <mkdir dir="target/generated-sources" />
-                    <exec executable="thrift">
-                      <arg value="--gen" />
-                      <arg value="java:beans"/>
-                      <arg value="-o"/>
-                      <arg value="target/generated-sources"/>
-                      <arg value="interface/scribe.thrift"/>
-                    </exec>
-                    <exec executable="thrift">
-                      <arg value="--gen" />
-                      <arg value="java:beans"/>
-                      <arg value="-o"/>
-                      <arg value="target/generated-sources"/>
-                      <arg value="interface/fb303/if/fb303.thrift"/>
-                    </exec>
-                    <delete>
-                      <fileset dir="src/java/scribe/thrift" includes="**/*"/>
-                      <fileset dir="src/java/com/facebook/fb303" includes="**/*"/>
-                    </delete>
-                    <copy todir="src/java/scribe/thrift">
-                      <fileset dir="target/generated-sources/gen-javabean/scribe"/>
-                    </copy>
-                    <copy todir="src/java/com/facebook/fb303">
-                      <fileset dir="target/generated-sources/gen-javabean/com/facebook/fb303"/>
-                    </copy>
-                  </tasks>
-                </configuration>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-  
+ 
 </project>
